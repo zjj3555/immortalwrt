@@ -6,6 +6,7 @@ on:
     branches: [openwrt-24.10]
     paths:
       - 'target/linux/ramips/dts/mt7621_cudy_wr1300-v2v3.dtsi'
+      - 'target/linux/ramips/dts/mt7621_cudy_wr1300-v3.dts'
       - '.github/workflows/build.yml'
 
 permissions:
