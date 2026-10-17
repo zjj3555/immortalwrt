@@ -1,12 +1,13 @@
-name: Build ImmortalWrt 24.10 - Cudy WR1300 v3
+name: Build ImmortalWrt 24.10 - GX30
 
 on:
   workflow_dispatch:
   push:
     branches: [openwrt-24.10]
     paths:
-      - 'target/linux/ramips/dts/mt7621_cudy_wr1300-v2v3.dtsi'
+      - 'target/linux/ramips/dts/mt7621_gx30.dts'
       - 'target/linux/ramips/dts/mt7621_cudy_wr1300-v3.dts'
+      - 'target/linux/ramips/image/mt7621.mk'
       - '.github/workflows/build.yml'
 
 permissions:
@@ -39,6 +40,7 @@ jobs:
         run: |
           echo "CONFIG_TARGET_ramips=y" >> .config
           echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
+          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_gx30=y" >> .config
           echo "CONFIG_TARGET_ramips_mt7621_DEVICE_cudy_wr1300-v3=y" >> .config
           make defconfig
 
@@ -49,8 +51,9 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: cudy-wr1300-v3-firmware
+          name: gx30-firmware
           path: |
+            bin/targets/ramips/mt7621/*gx30*
             bin/targets/ramips/mt7621/*cudy_wr1300-v3*
             bin/targets/ramips/mt7621/sha256sums
           if-no-files-found: error

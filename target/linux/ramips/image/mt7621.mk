@@ -798,6 +798,16 @@ define Device/cudy_wr1300-v3
 endef
 TARGET_DEVICES += cudy_wr1300-v3
 
+define Device/gx30
+  $(Device/dsa-migration)
+  IMAGE_SIZE := 15872k
+  DEVICE_VENDOR := GX30
+  DEVICE_MODEL := GX30
+  DEVICE_PACKAGES := kmod-mt7603 kmod-mt7615e kmod-mt7663-firmware-ap 	-uboot-envtools
+  SUPPORTED_DEVICES += cudy,wr1300-v3 cudy,wr1300 R30
+endef
+TARGET_DEVICES += gx30
+
 define Device/cudy_wr2100
   $(Device/dsa-migration)
   DEVICE_VENDOR := Cudy
