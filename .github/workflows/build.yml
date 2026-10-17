@@ -1,0 +1,55 @@
+name: Build ImmortalWrt 24.10 - Cudy WR1300 v3
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [openwrt-24.10]
+    paths:
+      - 'target/linux/ramips/dts/mt7621_cudy_wr1300-v2v3.dtsi'
+      - '.github/workflows/build.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential clang flex bison g++ gawk \
+            gcc-multilib g++-multilib gettext git libncurses5-dev libssl-dev \
+            python3-setuptools rsync swig unzip zlib1g-dev file wget time
+
+      - name: Update feeds
+        run: |
+          ./scripts/feeds update -a
+
+      - name: Install feeds
+        run: |
+          ./scripts/feeds install -a
+
+      - name: Configure target (single device)
+        run: |
+          echo "CONFIG_TARGET_ramips=y" >> .config
+          echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
+          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_cudy_wr1300-v3=y" >> .config
+          make defconfig
+
+      - name: Build firmware
+        run: |
+          make -j$(nproc) V=s
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: cudy-wr1300-v3-firmware
+          path: |
+            bin/targets/ramips/mt7621/*cudy_wr1300-v3*
+            bin/targets/ramips/mt7621/sha256sums
+          if-no-files-found: error
