@@ -8,6 +8,8 @@ on:
       - 'target/linux/ramips/dts/mt7621_gx30.dts'
       - 'target/linux/ramips/dts/mt7621_cudy_wr1300-v3.dts'
       - 'target/linux/ramips/image/mt7621.mk'
+      - 'extra-feeds.conf'
+      - 'extra-packages.list'
       - '.github/workflows/build.yml'
 
 permissions:
@@ -30,6 +32,9 @@ jobs:
 
       - name: Update feeds
         run: |
+          if [ -f extra-feeds.conf ] && [ -s extra-feeds.conf ]; then
+            cat extra-feeds.conf >> feeds.conf.default
+          fi
           ./scripts/feeds update -a
 
       - name: Install feeds
@@ -42,6 +47,9 @@ jobs:
           echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
           echo "CONFIG_TARGET_ramips_mt7621_DEVICE_gx30=y" >> .config
           echo "CONFIG_TARGET_ramips_mt7621_DEVICE_cudy_wr1300-v3=y" >> .config
+          if [ -f extra-packages.list ]; then
+            grep -vE '^\s*#|^\s*$' extra-packages.list >> .config
+          fi
           make defconfig
 
       - name: Build firmware

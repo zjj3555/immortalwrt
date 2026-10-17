@@ -1,0 +1,11 @@
+# ============================================================
+# 额外编译进固件的软件包清单
+# 每行：CONFIG_PACKAGE_<包名>=y
+# ============================================================
+
+# Vantage 主题 + 仪表盘
+CONFIG_PACKAGE_luci-theme-vantage=y
+CONFIG_PACKAGE_luci-app-vantage=y
+
+# PassWall 科学上网
+CONFIG_PACKAGE_luci-app-passwall=y
