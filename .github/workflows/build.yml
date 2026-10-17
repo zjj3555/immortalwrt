@@ -41,16 +41,44 @@ jobs:
         run: |
           ./scripts/feeds install -a
 
-      - name: Configure target (single device)
+      - name: Configure target (multi device)
         run: |
+          # Two distinct Kconfig symbol namespaces exist for devices:
+          #   * choice "Target Profile"      -> TARGET_<conf>_DEVICE_<dev>          (single device)
+          #   * menu   "Target Devices"      -> TARGET_DEVICE_<conf>_DEVICE_<dev>   (multi device,
+          #                                                                         depends on TARGET_MULTI_PROFILE)
+          # The old config wrote CONFIG_TARGET_ramips_mt7621_DEVICE_gx30=y, which lives in the
+          # single-select "Target Profile" choice together with cudy_wr1300-v3. A choice can only
+          # hold one selection, so gx30 was silently dropped by `make defconfig` and only the
+          # cudy_wr1300-v3 image was produced. Use TARGET_MULTI_PROFILE + TARGET_DEVICE_* instead.
           echo "CONFIG_TARGET_ramips=y" >> .config
           echo "CONFIG_TARGET_ramips_mt7621=y" >> .config
-          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_gx30=y" >> .config
-          echo "CONFIG_TARGET_ramips_mt7621_DEVICE_cudy_wr1300-v3=y" >> .config
+          echo "CONFIG_TARGET_MULTI_PROFILE=y" >> .config
+          echo "CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_gx30=y" >> .config
+          echo "CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_cudy_wr1300-v3=y" >> .config
           if [ -f extra-packages.list ]; then
             grep -vE '^\s*#|^\s*$' extra-packages.list >> .config
           fi
           make defconfig
+
+      - name: Verify device selection
+        run: |
+          fail=0
+          for sym in \
+            CONFIG_TARGET_MULTI_PROFILE \
+            CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_gx30 \
+            CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_cudy_wr1300-v3
+          do
+            if grep -q "^${sym}=y$" .config; then
+              echo "OK   ${sym}=y"
+            else
+              echo "::error::${sym} was not enabled by defconfig"
+              fail=1
+            fi
+          done
+          echo "--- selected devices ---"
+          grep -E '^CONFIG_TARGET_DEVICE_ramips_mt7621_DEVICE_' .config || true
+          exit $fail
 
       - name: Build firmware
         run: |
